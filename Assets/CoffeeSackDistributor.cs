@@ -3,24 +3,26 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CoffeeCollector : MonoBehaviour
+public class CoffeeSackDistributor : MonoBehaviour
 {
+    public Transform playerTargetTransform;
     public List<Transform> noofSack = new List<Transform>();
-    public Transform playerTargetTransform, factoryTransform;
     public Action<Transform> onCompleteCallback;
+
     [SerializeField] private float spacing;
     public float animationDuration = 0.5f;
+
     int row = 0;
     int column = 0;
 
     public Ease easeType = Ease.OutQuad;
-    
+
     public void MoveSackToPlayer()
     {
         Sequence mySequence = DOTween.Sequence();
         foreach (Transform t in noofSack)
         {
-            SetGarbageParent(t, playerTargetTransform);
+            SetCoffeeSackParent(t, playerTargetTransform);
             Vector3 newPos = GetPosition(row, column);
             column++;
 
@@ -36,10 +38,10 @@ public class CoffeeCollector : MonoBehaviour
                 onCompleteCallback?.Invoke(t);
             }));
         }
-        SetGarbageParent(transform, playerTargetTransform);
-        transform.GetComponent<BoxCollider>().enabled = false;
+        SetCoffeeSackParent(transform, playerTargetTransform);
+        //transform.GetComponent<BoxCollider>().enabled = false;
     }
-    void SetGarbageParent(Transform transform, Transform target)
+    void SetCoffeeSackParent(Transform transform, Transform target)
     {
         transform.SetParent(target);
     }
@@ -52,5 +54,14 @@ public class CoffeeCollector : MonoBehaviour
             startOffset = new Vector3(column * spacing, 0, -row * spacing);
         }
         return playerTargetTransform.position + startOffset;
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (collision.gameObject.CompareTag("Player"))
+        {
+            Debug.Log("Collision Hit");
+            MoveSackToPlayer();
+        }
     }
 }
